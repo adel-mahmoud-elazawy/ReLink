@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReLink — تحويل المخلفات إلى قيمة اقتصادية | Waste to Worth</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            eco: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22'
+            }
+          },
+          fontFamily: {
+            sans: ['Cairo', 'Tajawal', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Cairo & Tajawal -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css?v=6">
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1320] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Live Market Ticker Header -->
+  <div class="bg-slate-900 text-slate-300 border-b border-slate-800 text-xs py-1.5 px-4 overflow-hidden select-none">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2 text-emerald-400 font-bold whitespace-nowrap pl-4 border-l border-slate-700">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <i class="fa-solid fa-arrow-trend-up"></i> مؤشر أسعار المواد المسترجعة اليوم:
+      </div>
+      <div class="overflow-hidden flex-1 relative mx-4">
+        <div class="ticker-content flex items-center gap-8 text-[11px] font-mono">
+          <span class="flex items-center gap-1.5"><span class="text-white font-bold">بلاستيك PET مضغوط:</span> <span class="text-emerald-400">38,000 ج.م / طن (+3.2%)</span></span>
+          <span class="flex items-center gap-1.5"><span class="text-white font-bold">كرتون صناعي OCC:</span> <span class="text-emerald-400">8,500 ج.م / طن (+1.8%)</span></span>
+          <span class="flex items-center gap-1.5"><span class="text-white font-bold">خردة ألومنيوم 6063:</span> <span class="text-emerald-400">105,000 ج.م / طن (+4.1%)</span></span>
+          <span class="flex items-center gap-1.5"><span class="text-white font-bold">مخلفات إلكترونية PCB:</span> <span class="text-emerald-400">380,000 ج.م / طن (+5.5%)</span></span>
+          <span class="flex items-center gap-1.5"><span class="text-white font-bold">زجاج مفرز:</span> <span class="text-slate-400">3,000 ج.م / طن (0.0%)</span></span>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-3 text-slate-400 text-[11px]">
+        <span><i class="fa-solid fa-shield-halved text-emerald-500"></i> شبكة موثقة ومعتمدة</span>
+        <button id="resetDataBtn" class="hover:text-emerald-400 text-slate-400 text-[11px] transition" title="إعادة تعيين البيانات الافتراضية">
+          <i class="fa-solid fa-rotate-right ml-1"></i> إعادة ضبط العرض
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Header & Navigation Bar -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-slate-200/80 dark:border-slate-800 shadow-sm transition">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+      <div class="flex items-center justify-between gap-4">
+        
+        <!-- Platform Brand & Identity -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchRole('impact')">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-lime-400 flex items-center justify-center text-white shadow-lg shadow-emerald-600/30">
+            <i class="fa-solid fa-repeat text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-black text-xl tracking-tight text-slate-900 dark:text-white">ReLink</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">النموذج الأولي • v6</span>
+            </div>
+            <p class="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 leading-none mt-0.5">تحويل المخلفات إلى قيمة اقتصادية • Waste to Worth</p>
+          </div>
+        </div>
+
+        <!-- Role Switcher (Desktop & Tablet) -->
+        <nav class="hidden lg:flex items-center bg-slate-100/90 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-inner">
+          <button data-role-target="generator" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
+            <i class="fa-solid fa-building text-sm"></i>
+            <span>أصحاب المخلفات والمنشآت</span>
+          </button>
+          <button data-role-target="collector" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <i class="fa-solid fa-truck-moving text-sm"></i>
+            <span>جامعو المخلفات واللوجستيات</span>
+          </button>
+          <button data-role-target="factory" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <i class="fa-solid fa-industry text-sm"></i>
+            <span>مصانع التدوير والمشترون B2B</span>
+          </button>
+          <button data-role-target="impact" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <i class="fa-solid fa-chart-pie text-sm"></i>
+            <span>لوحة أثر الاقتصاد الدائري</span>
+          </button>
+          <button data-role-target="admin" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <i class="fa-solid fa-user-shield text-sm"></i>
+            <span>لوحة Admin</span>
+          </button>
+        </nav>
+
+        <!-- Right Side Actions & User Profile -->
+        <div class="flex items-center gap-2.5">
+          <!-- Guided Demo Tour Button -->
+          <span id="demoModeBadge" class="hidden px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black">وضع العرض</span>
+          <button id="logoutBtn" title="تسجيل الدخول / تبديل الدور" class="px-3 h-10 gap-1.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-right-left"></i><span id="logoutLabel" class="hidden sm:inline">تسجيل الدخول</span></button>
+          <button id="startTourBtn" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 dark:text-amber-300 text-xs font-bold border border-amber-200 dark:border-amber-800 transition">
+            <i class="fa-solid fa-compass"></i>
+            <span>جولة العرض</span>
+          </button>
+
+          <!-- Quick Post Material Button -->
+          <button id="navQuickAddBtn" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i>
+            <span class="hidden sm:inline">تسجيل شحنة جديدة</span>
+          </button>
+
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button id="notifToggleBtn" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition relative">
+              <i class="fa-regular fa-bell"></i>
+              <span id="notifBadge" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">2</span>
+            </button>
+            <!-- Dropdown -->
+            <div id="notifDropdown" class="hidden absolute left-0 sm:right-auto sm:left-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden">
+              <div class="p-3 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span class="font-bold text-xs text-slate-800 dark:text-slate-200">الإشعارات والتحديثات</span>
+                <span class="text-[10px] text-emerald-600 font-bold">تحديث فوري</span>
+              </div>
+              <div id="notifList" class="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Theme Toggle -->
+          <button id="themeToggleBtn" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition" title="تبديل المظهر">
+            <i id="themeToggleIcon" class="fa-solid fa-moon text-slate-600 dark:text-amber-400"></i>
+          </button>
+
+          <!-- User Role Badge -->
+          <div class="hidden md:flex items-center gap-2.5 pr-2 border-r border-slate-200 dark:border-slate-800">
+            <div id="headerUserAvatar" class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-building text-emerald-600 dark:text-emerald-400"></i>
+            </div>
+            <div class="text-right leading-tight">
+              <div id="headerUserName" class="text-xs font-bold text-slate-800 dark:text-slate-200">مصنع الأغذية الحديثة</div>
+              <div id="headerUserRole" class="text-[10px] text-slate-400">منشأة منتجة للمخلفات</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Mobile Role Switcher Tabs -->
+      <div class="flex lg:hidden overflow-x-auto gap-2 pt-3 pb-1 border-t border-slate-200/60 dark:border-slate-800 mt-2.5 scrollbar-none">
+        <button data-role-target="generator" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap bg-emerald-600 text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-building"></i> المولّدون
+        </button>
+        <button data-role-target="collector" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-truck-moving"></i> المجمّعون
+        </button>
+        <button data-role-target="factory" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-industry"></i> مصانع التدوير
+        </button>
+        <button data-role-target="impact" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-pie"></i> الأثر الدائري
+        </button>
+        <button data-role-target="admin" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-user-shield"></i> Admin
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content View Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
+
+    <div id="nextStepBanner" class="hidden"></div>
+
+    <!-- ========================================================================= -->
+    <!-- PORTAL 1: أصحاب المخلفات والمنشآت (Waste Generators) -->
+    <!-- ========================================================================= -->
+    <section id="generatorPortal" class="space-y-6">
+      
+      <!-- Generator Welcome & Hero Card -->
+      <div class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div class="absolute -left-10 -bottom-10 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute right-1/3 -top-10 w-48 h-48 bg-lime-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-200 text-xs font-semibold">
+              <i class="fa-solid fa-circle-check"></i> بوابة المنشآت والجهات المنتجة للمخلفات
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+              حوّل مخلفات منشأتك إلى إيرادات دورية مستدامة
+            </h1>
+            <p class="text-sm text-emerald-100/90 leading-relaxed">
+              سجّل دفعات المواد القابلة لإعادة التدوير (بلاستيك، كرتون، معادن، إلكترونيات) بوزنها وموقعها، وتواصل مع شبكة المجمّعين المرخصين فوراً مع تتبع رقمي كامل وشهادات استدامة.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button id="btnOpenNewListingModal" class="px-5 py-3.5 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-900 font-black text-sm transition shadow-lg flex items-center justify-center gap-2">
+              <i class="fa-solid fa-plus-circle text-emerald-600 text-base"></i>
+              <span>تسجيل شحنة جديدة</span>
+            </button>
+            <button onclick="switchRole('impact')" class="px-4 py-3.5 rounded-2xl bg-emerald-900/60 hover:bg-emerald-900 text-white border border-emerald-500/40 font-bold text-sm transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-leaf text-lime-400"></i>
+              <span>تقرير البصمة الكربونية</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Summary Metric Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">إجمالي المورد للتدوير</span>
+            <strong id="genStatTotalQty" class="text-xl font-black text-slate-900 dark:text-white">10.8 طن</strong>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">العوائد المالية المحققة</span>
+            <strong id="genStatIncome" class="text-xl font-black text-emerald-600 dark:text-emerald-400">426,500 ج.م</strong>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-truck-ramp-box"></i>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">شحنات نشطة قيد الجمع</span>
+            <strong id="genStatActive" class="text-xl font-black text-slate-900 dark:text-white">3 طلبات</strong>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">إيصالات تم تحصيلها</span>
+            <strong id="genStatCompleted" class="text-xl font-black text-slate-900 dark:text-white">1 مكتملة</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generator Request List Header & Filters -->
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-emerald-600"></i>
+              <span>سجل شحنات المنشأة ومتابعة الجمع</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">تتبع تقدم الناقلين والتحقق من أوزان الشحنات وإيصالات الاستلام</p>
+          </div>
+
+          <!-- Status Filters -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <button data-gen-filter="all" class="px-3 py-1.5 rounded-xl text-xs font-bold transition bg-emerald-600 text-white">الكل</button>
+            <button data-gen-filter="pending" class="px-3 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">قيد الانتظار</button>
+            <button data-gen-filter="accepted" class="px-3 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">تم القبول</button>
+            <button data-gen-filter="collecting" class="px-3 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">جاري الجمع</button>
+            <button data-gen-filter="completed" class="px-3 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">مكتمل</button>
+          </div>
+        </div>
+
+        <!-- Cards Grid Container -->
+        <div id="generatorRequestsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PORTAL 2: العاملون وجامعو المخلفات (Waste Collectors & Logistics) -->
+    <!-- ========================================================================= -->
+    <section id="collectorPortal" class="hidden space-y-6">
+      
+      <!-- Collector Profile & Fleet Status Bar -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <div class="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/30 flex items-center justify-center text-3xl">
+              <i class="fa-solid fa-truck-fast"></i>
+            </div>
+            <span class="absolute -bottom-1 -left-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-[10px] text-white" title="سائق نشط ومتاح">
+              <i class="fa-solid fa-check"></i>
+            </span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 id="colName" class="text-lg font-black text-slate-900 dark:text-white">كابتن / سامي عبد الرحمن</h2>
+              <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">ناقل معتمد</span>
+            </div>
+            <p id="colFleet" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">أسطول نسيم البيئة للخدمات اللوجستية</p>
+            <div class="flex items-center gap-3 text-xs text-slate-400 mt-2">
+              <span><i class="fa-solid fa-star text-amber-400 ml-1"></i> <span id="colRatingText">تقييم 4.9 ★</span></span>
+              <span>•</span>
+              <span><i class="fa-solid fa-id-card ml-1 text-slate-400"></i> رخصة نقل بيئي سارية</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Truck Capacity & Earnings Meter -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 lg:w-1/2">
+          <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <span class="text-xs text-slate-400 block mb-1">حمولة الشاحنة الحالية</span>
+            <strong id="colLoadTons" class="text-sm font-black text-slate-800 dark:text-slate-100 block">2.1 / 5.0 طن</strong>
+            <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden mt-2">
+              <div id="colCapacityBar" class="bg-amber-500 h-full transition-all duration-300" style="width: 42%"></div>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <span class="text-xs text-slate-400 block mb-1">رحلات الجمع اليوم</span>
+            <strong id="colTripsToday" class="text-base font-black text-slate-800 dark:text-slate-100 block">4 رحلات</strong>
+            <span class="text-[11px] text-emerald-600 font-semibold">+2 عن الأمس</span>
+          </div>
+
+          <div class="bg-emerald-50 dark:bg-emerald-950/40 p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-900 col-span-2 sm:col-span-1">
+            <span class="text-xs text-emerald-700 dark:text-emerald-400 block mb-1">أرباح الجمع اليوم</span>
+            <strong id="colEarningsToday" class="text-base font-black text-emerald-700 dark:text-emerald-400 block">8,900 ج.م</strong>
+            <span class="text-[11px] text-slate-500 dark:text-slate-400">إيداع فوري بالمحفظة</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Collector Working Grid (Live Map + Nearby Feed) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Interactive Radar & Map (Takes 2 Columns on desktop) -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-black text-slate-900 dark:text-white text-base flex items-center gap-2">
+                  <i class="fa-solid fa-map-location-dot text-emerald-600"></i>
+                  <span>رادار وخرائط طلبات الجمع المباشرة (القاهرة الكبرى)</span>
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">انقر على أي نقطة على الخريطة للاطلاع على تفاصيل الشحنة وقبولها</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> طلب متاح
+                </span>
+                <span class="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl">
+                  <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span> قيد التنفيذ
+                </span>
+              </div>
+            </div>
+
+            <!-- Leaflet Map Container -->
+            <div id="collectorMap" class="shadow-inner border border-slate-200 dark:border-slate-700"></div>
+
+            <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+              <span><i class="fa-solid fa-satellite-dish ml-1 text-emerald-500"></i> تحديث موقع GPS كل 15 ثانية</span>
+              <span>نصف قطر التغطية المفضل: 25 كم</span>
+            </div>
+          </div>
+
+          <!-- Active Jobs Section (In Progress) -->
+          <div class="space-y-3">
+            <h4 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+              <i class="fa-solid fa-route text-indigo-600"></i>
+              <span>مهامك المقبولة وقيد التنفيذ</span>
+            </h4>
+            <div id="collectorActiveTasksContainer" class="space-y-3">
+              <!-- Injected via JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Nearby Available Feed (1 Column) -->
+        <div class="space-y-4">
+          <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-black text-slate-900 dark:text-white text-base flex items-center gap-2">
+                  <i class="fa-solid fa-bullhorn text-amber-500"></i>
+                  <span>شحنات بانتظار ناقل</span>
+                </h4>
+                <p class="text-xs text-slate-400">طلبات جديدة في نطاق 25 كم</p>
+              </div>
+              <span class="text-xs font-mono px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-bold">محدث</span>
+            </div>
+
+            <div id="collectorFeedContainer" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+              <!-- Injected via JavaScript -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PORTAL 3: مصانع وشركات إعادة التدوير (Recycling Factories & B2B Marketplace) -->
+    <!-- ========================================================================= -->
+    <section id="factoryPortal" class="hidden space-y-6">
+      
+      <!-- Factory Procurement Hero Bar -->
+      <div class="bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-blue-200 text-xs font-semibold">
+              <i class="fa-solid fa-industry"></i> بوابة مصانع التدوير والمشترين الصناعيين (B2B Hub)
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black">
+              سوق التوريد الصناعي للمواد الخام المفروزة
+            </h2>
+            <p class="text-sm text-blue-200/90 leading-relaxed">
+              تصفح دفعات وبالات المواد الخام المعالجة والمفروزة صناعياً بكميات ضخمة ومطابقة لأعلى معايير النقاوة لخطوط الإنتاج، مع عقود توريد موثقة وشهادات تتبع بيئية ESG.
+            </p>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/15 flex items-center gap-6">
+            <div>
+              <span class="text-xs text-blue-200 block">المشتريات المحققة هذا الشهر</span>
+              <strong id="factoryProcuredTons" class="text-2xl font-black text-white">142.5 طن</strong>
+              <span id="factoryQuotaPercent" class="text-xs text-lime-400 block mt-0.5">71% من الحصة الشهرية</span>
+            </div>
+            <div class="pr-6 border-r border-white/20">
+              <span class="text-xs text-blue-200 block">إجمالي الإنفاق</span>
+              <strong id="factoryBudgetSpent" class="text-2xl font-black text-white">5,420,000 ج.م</strong>
+              <span class="text-xs text-blue-300 block mt-0.5">ضمان الدفع ReLink Escrow</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compliance & Sustainability ESG Banner -->
+      <div class="bg-emerald-50 dark:bg-emerald-950/40 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-900 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xl flex-shrink-0">
+            <i class="fa-solid fa-certificate"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 dark:text-white text-sm">شهادة سلاسل الإمداد الدائرية المعتمدة (Circularity Sourcing Certificate)</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-300">توفر منصة ReLink لكل دفعة تشتريها سجلاً موثقاً للبصمة الكربونية وتقارير الإفصاح البيئي ESG وحوكمة الاستدامة.</p>
+          </div>
+        </div>
+        <button id="btnViewEsgCertificate" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs whitespace-nowrap transition flex items-center gap-2 shadow-sm">
+          <i class="fa-solid fa-file-contract"></i> عرض شهادة التدوير المعتمدة
+        </button>
+      </div>
+
+      <!-- Factory purchase orders -->
+      <div class="space-y-3">
+        <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-emerald-600"></i><span>طلبات الشراء الخاصة بي</span></h3>
+        <div id="factoryOrdersContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <!-- Marketplace Filters & Category Pills -->
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <i class="fa-solid fa-boxes-stacked text-blue-600"></i>
+              <span>دفعات المواد الخام الجاهزة للشحن الفوري</span>
+            </h3>
+            <p class="text-xs text-slate-400">كميات بالات صناعية مفروزة ومرفقة بفحوصات الجودة المخبرية</p>
+          </div>
+
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <button data-factory-filter="all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-emerald-600 text-white">جميع المواد</button>
+            <button data-factory-filter="plastic" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">بلاستيك PET/HDPE</button>
+            <button data-factory-filter="paper" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">كرتون وورق مضغوط</button>
+            <button data-factory-filter="metals" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">ألومنيوم وسبائك</button>
+            <button data-factory-filter="ewaste" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">إلكترونيات ومعادن ثمينة</button>
+          </div>
+        </div>
+
+        <!-- B2B Batches Grid Container -->
+        <div id="factoryMarketplaceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PORTAL 4: لوحة أثر الاقتصاد الدائري (Circular Economy Impact Hub) -->
+    <!-- ========================================================================= -->
+    <section id="impactPortal" class="hidden space-y-8">
+      
+      <!-- Impact Hero Header -->
+      <div class="text-center max-w-3xl mx-auto space-y-3 pt-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+          <i class="fa-solid fa-earth-americas"></i> مؤشرات الاستدامة والأثر الاقتصادي التراكمي <span id="impactDataBadge" class="mr-2 px-2 py-0.5 rounded-full bg-white/70 dark:bg-slate-900/50 text-[10px]"></span>
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+          أثر منصة ReLink في تمكين الاقتصاد الدائري الوطني
+        </h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+          نحول النفايات الصلبة من عبء بيئي على المرادم إلى رافد صناعي واقتصادي يعزز المحتوى المحلي ويخفض الانبعاثات الكربونية بما يتماشى مع رؤية مصر 2030 واستراتيجية التنمية المستدامة.
+        </p>
+      </div>
+
+      <!-- 4 Huge Impact Counter Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
+            <i class="fa-solid fa-recycle"></i>
+          </div>
+          <div>
+            <span class="text-xs text-emerald-100 font-semibold block mb-2">إجمالي المواد المعاد تدويرها</span>
+            <div class="flex items-baseline gap-2">
+              <span id="statRecycledTons" class="text-3xl sm:text-4xl font-black tracking-tight">1,428.6</span>
+              <span class="text-sm font-bold text-emerald-200">طن متري</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-emerald-100/80 mt-4 pt-3 border-t border-white/20">
+            تم تحويلها بالكامل عن المرادم التقليدية
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-br from-teal-700 to-cyan-800 text-white p-6 rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+          </div>
+          <div>
+            <span class="text-xs text-cyan-100 font-semibold block mb-2">انبعاثات الكربون المتفاداة</span>
+            <div class="flex items-baseline gap-2">
+              <span id="statCo2Reduced" class="text-3xl sm:text-4xl font-black tracking-tight">2,857.2</span>
+              <span class="text-sm font-bold text-cyan-200">طن CO2e</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-cyan-100/80 mt-4 pt-3 border-t border-white/20">
+            مكافئ لإيقاف 620 سيارة عن السير لمدة عام
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-br from-lime-600 to-emerald-700 text-white p-6 rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
+            <i class="fa-solid fa-tree"></i>
+          </div>
+          <div>
+            <span class="text-xs text-lime-100 font-semibold block mb-2">المعادل في زراعة الأشجار</span>
+            <div class="flex items-baseline gap-2">
+              <span id="statTreesEq" class="text-3xl sm:text-4xl font-black tracking-tight">142,860</span>
+              <span class="text-sm font-bold text-lime-200">شجرة</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-lime-100/80 mt-4 pt-3 border-t border-white/20">
+            مساهمة مباشرة في تعزيز الغطاء النباتي
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-br from-amber-600 to-orange-700 text-white p-6 rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl pointer-events-none">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </div>
+          <div>
+            <span class="text-xs text-amber-100 font-semibold block mb-2">القيمة الاقتصادية المدورة</span>
+            <div class="flex items-baseline gap-2">
+              <span id="statEconomicValue" class="text-3xl sm:text-4xl font-black tracking-tight">35,700,000</span>
+              <span class="text-sm font-bold text-amber-200">ج.م</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-amber-100/80 mt-4 pt-3 border-t border-white/20">
+            تم ضخها للمنشآت وجامعي المخلفات
+          </p>
+        </div>
+      </div>
+
+      <!-- Charts Section (Chart.js) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Distribution Chart -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-black text-slate-900 dark:text-white text-base">توزيع المواد المسترجعة حسب الصنف الصناعي</h4>
+              <p class="text-xs text-slate-400">نسبة كل مادة من إجمالي الأطنان المستلمة</p>
+            </div>
+            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-xl">2026 Q3/Q4</span>
+          </div>
+          <div class="h-72 relative">
+            <canvas id="materialsDistributionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Monthly Growth Chart -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-black text-slate-900 dark:text-white text-base">مسار نمو الأثر البيئي والعوائد المالية شهرياً</h4>
+              <p class="text-xs text-slate-400">مقارنة أطنان CO2 المخفضة مقابل المبالغ النقدية</p>
+            </div>
+            <span class="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-950 px-2.5 py-1 rounded-xl">تراكمي</span>
+          </div>
+          <div class="h-72 relative">
+            <canvas id="monthlyImpactChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Circular Economy Diagram Step Pipeline -->
+      <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+        <div class="text-center max-w-xl mx-auto space-y-1">
+          <h4 class="font-black text-slate-900 dark:text-white text-lg">سلسلة القيمة المضافة المغلقة في ReLink</h4>
+          <p class="text-xs text-slate-400">كيف نضمن دورة حياة كاملة ومستدامة للمواد من المنشأ حتى المصنع</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+          <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 text-center space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 mx-auto flex items-center justify-center text-xl">
+              <i class="fa-solid fa-industry"></i>
+            </div>
+            <h5 class="font-bold text-slate-900 dark:text-white text-sm">1. منشآت ومولّدو المواد</h5>
+            <p class="text-xs text-slate-500 dark:text-slate-400">فرز المخلفات في المنشأ وإدراج الشحنات على المنصة لتحديد مواعيد الجمع وتحقيق دخل مالي مجزٍ.</p>
+          </div>
+
+          <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 text-center space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 mx-auto flex items-center justify-center text-xl">
+              <i class="fa-solid fa-truck-moving"></i>
+            </div>
+            <h5 class="font-bold text-slate-900 dark:text-white text-sm">2. أسطول النقل والجمع</h5>
+            <p class="text-xs text-slate-500 dark:text-slate-400">تحسين مسارات السائقين وتقليل الانبعاثات وإصدار إيصالات وزن رقمية دقيقة وفورية عبر التطبيق.</p>
+          </div>
+
+          <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 text-center space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 mx-auto flex items-center justify-center text-xl">
+              <i class="fa-solid fa-boxes-packing"></i>
+            </div>
+            <h5 class="font-bold text-slate-900 dark:text-white text-sm">3. محطات الفرز والكبس</h5>
+            <p class="text-xs text-slate-500 dark:text-slate-400">تجميع الدفعات وضغطها في بالات معيارية عالية النقاوة وإجراء الفحوصات المخبرية للتأكد من مطابقتها.</p>
+          </div>
+
+          <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 text-center space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-teal-100 dark:bg-teal-950 text-teal-600 mx-auto flex items-center justify-center text-xl">
+              <i class="fa-solid fa-arrows-spin"></i>
+            </div>
+            <h5 class="font-bold text-slate-900 dark:text-white text-sm">4. مصانع إعادة التدوير B2B</h5>
+            <p class="text-xs text-slate-500 dark:text-slate-400">شراء كميات ضخمة كمواد خام لخطوط الإنتاج وإصدار شهادات البصمة الكربونية المعتمدة.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS SECTION -->
+  <!-- ========================================================================= -->
+
+  <!-- Modal 1: New Material Listing Form (Generator) -->
+  <div id="newListingModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative transition-all">
+      <button id="btnCloseNewListingModal" class="absolute top-5 left-5 w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="mb-6">
+        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">بوابة المنشآت</span>
+        <h3 class="text-xl font-black text-slate-900 dark:text-white mt-0.5">تسجيل شحنة جديدة للتدوير</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">أدخل مواصفات المواد المتاحة ليتم ربطك بأقرب ناقل معتمد فوراً</p>
+      </div>
+
+      <form id="newListingForm" class="space-y-4">
+        <!-- Material Select -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">نوع المادة المسترجعة</label>
+          <select id="newMaterialSelect" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+            <option value="plastic">بلاستيك (PET / HDPE) — ~24 ج.م / كجم</option>
+            <option value="paper">ورق وكرتون مضغوط (OCC) — ~7.5 ج.م / كجم</option>
+            <option value="metals">ألومنيوم ومعادن خردة — ~95 ج.م / كجم</option>
+            <option value="ewaste">مخلفات إلكترونية وبطاريات — ~160 ج.م / كجم</option>
+            <option value="glass">زجاج صناعي مفروز — ~3 ج.م / كجم</option>
+            <option value="tires">إطارات ومطاط تالف — ~8 ج.م / كجم</option>
+          </select>
+        </div>
+
+        <!-- Weight & Unit Grid -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">الكمية المقدرة</label>
+            <input type="number" id="newMaterialQty" value="2.5" step="0.1" min="0.1" required class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">وحدة القياس</label>
+            <select id="newMaterialUnit" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="طن" selected>طن متري</option>
+              <option value="كجم">كيلوجرام (كجم)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Location & District -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">المدينة</label>
+            <input type="text" value="القاهرة الكبرى" readonly class="w-full py-2.5 px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/50 text-slate-500 text-xs font-semibold cursor-not-allowed">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">الحي / المنطقة الصناعية</label>
+            <select id="newDistrictSelect" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="العاشر من رمضان - المنطقة الصناعية">العاشر من رمضان - المنطقة الصناعية</option>
+              <option value="العبور - المنطقة اللوجستية">العبور - المنطقة اللوجستية</option>
+              <option value="شبرا الخيمة - المنطقة الصناعية">شبرا الخيمة - المنطقة الصناعية</option>
+              <option value="التجمع الخامس">التجمع الخامس</option>
+              <option value="مدينة نصر">مدينة نصر</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Preferred Date -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">تاريخ ووقت الجمع المفضل</label>
+          <input type="date" id="newPreferredDate" value="2026-10-14" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+
+        <!-- Notes / Sorting Quality -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">حالة المادة ودرجة الفرز</label>
+          <input type="text" id="newMaterialNotes" value="مفروزة ونظيفة في بالات مكبوسة" placeholder="مثال: مفروز ونظيف، جاف، جاهز للشحن" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+
+        <!-- Photos -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">صور المادة (حتى 3 صور — اختياري)</label>
+          <input type="file" id="newPhotosInput" accept="image/*" multiple class="block w-full text-xs text-slate-500 file:ml-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-emerald-50 file:text-emerald-700 file:font-bold">
+          <div id="newPhotosPreview" class="flex gap-2 mt-2"></div>
+        </div>
+
+        <!-- Payout -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">طريقة استلام العائد</label>
+            <select id="newPayoutMethod" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none">
+              <option value="instapay">InstaPay</option><option value="vodafone">Vodafone Cash</option><option value="fawry">Fawry</option><option value="bank">تحويل بنكي</option><option value="escrow">ReLink Escrow (محفظة)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">رقم المحفظة / الحساب</label>
+            <input id="newPayoutNumber" placeholder="01XXXXXXXXX" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none">
+          </div>
+        </div>
+
+        <!-- Pricing Mode -->
+        <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">طريقة التسعير المفضلة</label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="flex items-center gap-2 cursor-pointer p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <input type="radio" name="pricingType" value="fixed" checked class="text-emerald-600 focus:ring-emerald-500">
+              <span class="font-bold text-slate-800 dark:text-slate-200">سعر السوق المعتمد</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <input type="radio" name="pricingType" value="bidding" class="text-emerald-600 focus:ring-emerald-500">
+              <span class="font-bold text-slate-800 dark:text-slate-200">فتح مزايدة بين الناقلين</span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-700 text-xs">
+            <span class="text-slate-400">العائد المالي المتوقع لشحنتك:</span>
+            <strong id="calculatedEstimatedPrice" class="text-sm font-black text-emerald-600 dark:text-emerald-400">104,000 ج.م</strong>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>نشر طلب الجمع وإشعار الناقلين القريبين</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Collector Receipt Issuer with Signature Pad -->
+  <div id="receiptIssuerModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+      <button onclick="closeReceiptIssuerModal()" class="absolute top-5 left-5 w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="mb-5">
+        <span class="text-xs font-bold text-emerald-600">بوابة الناقل المعتمد</span>
+        <h3 class="text-lg font-black text-slate-900 dark:text-white">إدخال الوزن النهائي وإصدار الإيصال</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">الشحنة <span id="issuerReqId" class="font-mono font-bold text-slate-700 dark:text-slate-300">REQ-1047</span> • <span id="issuerGeneratorName">سلسلة هايبر الشرق</span></p>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+          <span class="text-slate-400 block mb-0.5">المادة المجمعة:</span>
+          <strong id="issuerMaterialName" class="text-slate-800 dark:text-slate-200 text-sm">كرتون تعبئة مضغوط (OCC Balers)</strong>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الوزن الإجمالي بالشاحنة (كجم)</label>
+            <input type="number" id="inputGrossWeight" value="10400" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">وزن الشاحنة الفارغة (كجم)</label>
+            <input type="number" id="inputTareWeight" value="5200" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white">
+          </div>
+        </div>
+
+        <div class="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900 flex items-center justify-between text-xs">
+          <div>
+            <span class="text-slate-500 dark:text-slate-400 block">الوزن الصافي المعتمد:</span>
+            <strong id="displayNetWeight" class="text-base font-black text-emerald-700 dark:text-emerald-400">5,200 كجم (5.2 طن)</strong>
+          </div>
+          <div class="text-left">
+            <span class="text-slate-500 dark:text-slate-400 block">إجمالي المستحق للمنشأة:</span>
+            <strong id="displayTotalPayout" class="text-base font-black text-emerald-700 dark:text-emerald-400">39,000 ج.م</strong>
+          </div>
+        </div>
+
+        <!-- Signature Canvas -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300">التوقيع الإلكتروني لمندوب الاستلام والمنشأة</label>
+            <button id="clearSignatureBtn" type="button" class="text-[11px] text-rose-500 hover:underline">مسح التوقيع</button>
+          </div>
+          <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950">
+            <canvas id="signatureCanvas" class="w-full h-28"></canvas>
+          </div>
+          <span class="text-[10px] text-slate-400 block mt-1">وقع بإصبعك أو بالفأرة داخل المربع أعلاه لتوثيق الاستلام</span>
+        </div>
+
+        <button id="btnConfirmIssueReceipt" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-stamp"></i>
+          <span>اعتماد الوزن وإصدار إيصال الاستلام الرقمي الموثق</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: View Digital Collection Receipt (Printable & QR Verified) -->
+  <div id="viewReceiptModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative receipt-paper text-slate-900 border border-slate-200">
+      <button onclick="closeViewReceiptModal()" class="no-print absolute top-4 left-4 w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <!-- Receipt Content -->
+      <div class="text-center pt-2 pb-4 border-b border-dashed border-slate-300">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-2 text-lg">
+          <i class="fa-solid fa-repeat"></i>
+        </div>
+        <h4 class="font-black text-base tracking-tight">منصة ReLink — إيصال استلام وتفريغ رقمي</h4>
+        <p class="text-[11px] text-slate-500">سجل توثيق المخلفات وسلسلة الإمداد الدائرية</p>
+        <div class="inline-block mt-2 font-mono text-xs font-bold bg-slate-100 px-3 py-1 rounded-full">
+          رقم الإيصال: <span id="receiptModalNo">RL-REC-9042</span>
+        </div>
+      </div>
+
+      <div class="py-4 space-y-2.5 text-xs border-b border-dashed border-slate-300">
+        <div class="flex justify-between">
+          <span class="text-slate-500">تاريخ ووقت الوزن:</span>
+          <span id="receiptModalDate" class="font-semibold">2026-10-12 14:30</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">المنشأة المولّدة:</span>
+          <span id="receiptModalGenName" class="font-bold">مصنع الأغذية الحديثة</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">الناقل المعتمد:</span>
+          <span id="receiptModalColName" class="font-semibold">كابتن / سامي عبد الرحمن</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">لوحة الشاحنة:</span>
+          <span id="receiptModalPlate" class="font-mono font-semibold">ر ق م 5022</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">صنف المادة:</span>
+          <span id="receiptModalMaterial" class="font-bold text-emerald-700">بلاستيك PET شفاف</span>
+        </div>
+      </div>
+
+      <div class="py-3 space-y-2 text-xs border-b border-dashed border-slate-300 bg-slate-50 p-3 rounded-xl my-3">
+        <div class="flex justify-between">
+          <span class="text-slate-500">الوزن الإجمالي (Gross):</span>
+          <span id="receiptModalGross" class="font-mono font-semibold">7,850 كجم</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">وزن الشاحنة الفارغة (Tare):</span>
+          <span id="receiptModalTare" class="font-mono font-semibold">5,750 كجم</span>
+        </div>
+        <div class="flex justify-between text-sm font-black border-t border-slate-200 pt-1.5 text-slate-900">
+          <span>الوزن الصافي المعتمد (Net):</span>
+          <span id="receiptModalNet" class="font-mono text-emerald-700">2,100 كجم</span>
+        </div>
+        <div class="flex justify-between text-xs pt-1">
+          <span class="text-slate-500">سعر الوحدة:</span>
+          <span id="receiptModalRate" class="font-semibold">95 ج.م / كجم</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-600 text-white font-black text-sm mb-4">
+        <span>إجمالي المبلغ المحول للمنشأة:</span>
+        <span id="receiptModalTotal" class="text-base">199,500 ج.م</span>
+      </div>
+
+      <!-- Verification QR & Stamp -->
+      <div class="flex items-center justify-between pt-2">
+        <div class="text-right">
+          <span class="text-[10px] text-slate-400 block">التحقق وتتبع سلسلة الكتل:</span>
+          <span class="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+            <i class="fa-solid fa-circle-check"></i> موثق ومشفر رقمياً
+          </span>
+          <span class="text-[9px] text-slate-400 block mt-1">معتمد من المركز الوطني للرقابة البيئية</span>
+        </div>
+        <div class="w-16 h-16 p-1 bg-white rounded-lg border border-slate-200">
+          <img id="receiptModalQR" src="" alt="QR" class="w-full h-full object-contain">
+        </div>
+      </div>
+
+      <!-- Print / Download Footer (Hidden in Print) -->
+      <div class="no-print pt-5 mt-4 border-t border-slate-200 flex gap-2">
+        <button onclick="window.print()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-print"></i> طباعة الإيصال
+        </button>
+        <button onclick="closeViewReceiptModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
+          إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Certified Circular ESG Sourcing Certificate -->
+  <div id="esgCertificateModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl relative border-8 border-emerald-900/10 text-slate-900">
+      <button id="btnCloseEsgCertificate" class="absolute top-5 left-5 w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="text-center space-y-2 border-b-2 border-emerald-700/20 pb-6 mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-800 text-3xl mb-1">
+          <i class="fa-solid fa-award"></i>
+        </div>
+        <h3 class="text-2xl font-black tracking-tight text-emerald-900">شهادة التدوير والاستدامة البيئية المعتمدة</h3>
+        <p class="text-xs text-slate-500 font-mono">CERTIFICATE OF CIRCULAR SOURCING & ESG COMPLIANCE</p>
+        <div class="text-xs font-bold text-emerald-700">رقم الشهادة المعتمد: CERT-ESG-2026-SA99</div>
+      </div>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-700">
+        <p class="text-sm font-semibold text-center text-slate-800">
+          تشهد منصة <span class="text-emerald-700 font-bold">ReLink — Waste to Worth</span> بأن:
+        </p>
+        <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 text-center">
+          <h4 class="text-lg font-black text-emerald-950">الشركة الوطنية للصناعات البلاستيكية والتدوير</h4>
+          <p class="text-xs text-emerald-700 font-medium mt-0.5">سجل تجاري: 123456 • القاهرة، جمهورية مصر العربية</p>
+        </div>
+
+        <p class="text-justify">
+          قد استكملت بنجاح توريد ومعالجة ما مقداره <strong>142.5 طن متري</strong> من المواد القابلة لإعادة التدوير الموثقة عبر المنصة، مما أسهم بشكل مباشر في:
+        </p>
+
+        <div class="grid grid-cols-3 gap-3 text-center my-4">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <strong class="text-emerald-700 text-base font-black block">285.0 طن</strong>
+            <span class="text-[11px] text-slate-500">انبعاثات CO2e تم تجنبها</span>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <strong class="text-blue-700 text-base font-black block">1,820,000 لتر</strong>
+            <span class="text-[11px] text-slate-500">مياه صناعية تم توفيرها</span>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <strong class="text-amber-700 text-base font-black block">99.4%</strong>
+            <span class="text-[11px] text-slate-500">معدل تحويل عن المرادم</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-6 border-t border-slate-200 text-xs">
+          <div>
+            <span class="text-slate-400 block text-[10px]">جهة الاعتماد:</span>
+            <strong class="text-slate-800 block">لجنة التوثيق البيئي — ReLink</strong>
+            <span class="text-[10px] text-slate-500">صادرة بتاريخ: 12 أكتوبر 2026</span>
+          </div>
+          <div class="w-20 h-20 rounded-full border-4 border-emerald-600/30 flex items-center justify-center text-center p-1 text-[9px] font-bold text-emerald-800 uppercase tracking-tighter">
+            ختم الاعتماد<br>ReLink Certified
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Stakeholder Presentation Guide Tour -->
+  <div id="tourModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+      <button onclick="closeTourModal()" class="absolute top-5 left-5 w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <div class="mb-5">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-2xl mb-3">
+          <i class="fa-solid fa-compass"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-900 dark:text-white">دليل العرض التقديمي لفريق العمل وأصحاب المصلحة</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">شرح سريع لكيفية تقديم النموذج الأولي التفاعلي لـ ReLink خلال الاجتماع</p>
+      </div>
+
+      <button onclick="RLX.startScenario()" class="w-full mb-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black flex items-center justify-center gap-2"><i class="fa-solid fa-play"></i> تشغيل السيناريو التلقائي (دقيقتان)</button>
+      <div class="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+        <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start justify-between gap-3">
+          <div>
+            <strong class="text-slate-900 dark:text-white block font-bold mb-1">الخطوة 1: بوابة منشآت المخلفات (Waste Generators)</strong>
+            <p class="text-slate-500 dark:text-slate-400">انقر على زر "تسجيل شحنة جديدة" لإدراج شحنة بلاستيك أو كرتون بوزن وموقع محدد وشاهد احتساب العائد المالي الفوري.</p>
+          </div>
+          <button onclick="tourJumpTo('generator')" class="px-3 py-1.5 bg-emerald-600 text-white rounded-xl font-bold flex-shrink-0 hover:bg-emerald-700 transition">انتقال</button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start justify-between gap-3">
+          <div>
+            <strong class="text-slate-900 dark:text-white block font-bold mb-1">الخطوة 2: بوابة أسطول المجمّعين (Collectors & Logistics)</strong>
+            <p class="text-slate-500 dark:text-slate-400">استعرض الخريطة التفاعلية الحية وقبول الشحنات القريبة، ثم جرب إدخال الوزن والتوقيع على إيصال الاستلام الرقمي!</p>
+          </div>
+          <button onclick="tourJumpTo('collector')" class="px-3 py-1.5 bg-amber-600 text-white rounded-xl font-bold flex-shrink-0 hover:bg-amber-700 transition">انتقال</button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start justify-between gap-3">
+          <div>
+            <strong class="text-slate-900 dark:text-white block font-bold mb-1">الخطوة 3: سوق مصانع التدوير B2B (Factories & Buyers)</strong>
+            <p class="text-slate-500 dark:text-slate-400">تصفح البالات المعالجة بالطن ومطابقتها للمواصفات المخبرية، وجرب زر "شراء فوري" أو معاينة شهادة الاستدامة ESG.</p>
+          </div>
+          <button onclick="tourJumpTo('factory')" class="px-3 py-1.5 bg-blue-600 text-white rounded-xl font-bold flex-shrink-0 hover:bg-blue-700 transition">انتقال</button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start justify-between gap-3">
+          <div>
+            <strong class="text-slate-900 dark:text-white block font-bold mb-1">الخطوة 4: لوحة مؤشرات الأثر الدائري (Impact Hub)</strong>
+            <p class="text-slate-500 dark:text-slate-400">شاهد الرسوم البيانية التفاعلية المباشرة لانبعاثات CO2 وأطنان النفايات المحولة عن المرادم والعوائد الاقتصادية التراكمية.</p>
+          </div>
+          <button onclick="tourJumpTo('impact')" class="px-3 py-1.5 bg-teal-600 text-white rounded-xl font-bold flex-shrink-0 hover:bg-teal-700 transition">انتقال</button>
+        </div>
+      </div>
+
+      <button onclick="closeTourModal()" class="w-full mt-5 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-xs transition">
+        بدء استكشاف المنصة
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  
+  <!-- Onboarding: role selection + registration -->
+  <div id="onboardingOverlay" class="hidden fixed inset-0 z-[60] overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-2xl p-6 sm:p-8">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-600 to-lime-400 flex items-center justify-center text-white text-2xl mb-3"><i class="fa-solid fa-repeat"></i></div>
+        <h2 class="text-2xl font-black text-slate-900 dark:text-white">أهلاً بك في ReLink</h2>
+        <p class="text-xs text-slate-500">Waste to Worth — من مخلفات إلى قيمة اقتصادية</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mb-5 text-center">
+        <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900"><strong class="text-lg font-black text-rose-600 block">+100 مليون طن</strong><span class="text-[11px] text-slate-500">مخلفات تنتجها مصر سنوياً*</span></div>
+        <div class="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900"><strong class="text-lg font-black text-amber-600 block">2.5 مليون طن</strong><span class="text-[11px] text-slate-500">مخلفات بلاستيكية (2022/2023)**</span></div>
+      </div>
+      <p class="text-[10px] text-slate-400 text-center mb-4">* تقدير GIZ لبرنامج إدارة المخلفات الصلبة في مصر. ** مركز المعلومات ودعم اتخاذ القرار (IDSC) عبر Egyptian Streets. اختر دورك للبدء:</p>
+      <div id="onboardStepRole">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+          <button data-pick-role="generator" class="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition text-center"><i class="fa-solid fa-building text-2xl text-emerald-600 mb-2"></i><strong class="block text-sm text-slate-900 dark:text-white">صاحب مخلفات</strong><span class="text-[11px] text-slate-500">سجّل شحنتك واستلم عائدها</span></button>
+          <button data-pick-role="collector" class="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-amber-500 transition text-center"><i class="fa-solid fa-truck-moving text-2xl text-amber-500 mb-2"></i><strong class="block text-sm text-slate-900 dark:text-white">جامع / ناقل</strong><span class="text-[11px] text-slate-500">اقبل مهام الجمع القريبة</span></button>
+          <button data-pick-role="factory" class="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 transition text-center"><i class="fa-solid fa-industry text-2xl text-blue-500 mb-2"></i><strong class="block text-sm text-slate-900 dark:text-white">مصنع تدوير</strong><span class="text-[11px] text-slate-500">اشترِ دفعات خام مفروزة</span></button>
+        </div>
+        <button data-pick-role="admin" class="w-full mb-2 py-2 rounded-xl text-[11px] font-bold text-slate-500 hover:text-emerald-600 transition"><i class="fa-solid fa-user-shield ml-1"></i> دخول المشرف (Admin)</button>
+        <button id="onboardDemoBtn" class="w-full py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-black"><i class="fa-solid fa-compass ml-1"></i> دخول وضع العرض (شاهد الأدوار الثلاثة بدون تسجيل)</button>
+      </div>
+      <form id="onboardForm" class="hidden space-y-3">
+        <p class="text-sm font-bold text-slate-700 dark:text-slate-200">التسجيل كـ <span id="onboardPickedTitle" class="text-emerald-600"></span></p>
+        <input id="onboardName" required placeholder="الاسم الكامل" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">
+        <input id="onboardPhone" required type="tel" placeholder="رقم الجوال" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">
+        <input id="onboardOrg" placeholder="اسم الجهة / الشركة (اختياري)" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">
+        <div id="onboardCodeWrap" class="hidden"><input id="onboardCode" type="password" placeholder="كود Admin" class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"></div>
+        <p class="text-[11px] text-slate-400">رقم الجوال هو معرّف حسابك: إذا كان مسجّلاً من قبل ستدخل إلى بياناتك السابقة تلقائياً.</p>
+        <div class="flex gap-2">
+          <button type="button" id="onboardBack" class="px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold">رجوع</button>
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black">متابعة (تسجيل / دخول)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Request details modal -->
+  <div id="requestDetailsModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md p-6">
+      <button id="btnCloseRequestDetails" class="absolute top-5 left-5 w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+      <div id="requestDetailsBody" class="pt-2"></div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="fixed bottom-6 left-6 z-[70] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 text-xs py-6 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        <span class="font-bold text-slate-800 dark:text-white">ReLink</span> — Waste to Worth
+        <span>•</span>
+        <span>منصة الاقتصاد الدائري المستدام</span>
+      </div>
+      <div class="flex items-center gap-6 text-slate-400 text-[11px]">
+        <span>مبني للشركات والمصانع ومقدمي الخدمات اللوجستية</span>
+        <span>تحديث 2026</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <!-- Project Scripts -->
+  <script src="js/data.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
+  <script src="js/features.js?v=6"></script>
+  <script src="js/config.js?v=6"></script>
+  <script src="js/backend.js?v=6"></script>
+</body>
+</html>
